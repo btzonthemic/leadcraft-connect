@@ -10,6 +10,7 @@ import HeatPumpInstallation from "./pages/HeatPumpInstallation";
 import PlumbingServices from "./pages/PlumbingServices";
 import ElectricalServices from "./pages/ElectricalServices";
 import HeatingServices from "./pages/HeatingServices";
+import Dashboard from "./pages/admin/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/plumbing-services" element={<PlumbingServices />} />
           <Route path="/electrical-services" element={<ElectricalServices />} />
           <Route path="/heating-services" element={<HeatingServices />} />
+          <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
