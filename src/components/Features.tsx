@@ -1,9 +1,9 @@
-import { Check, Shield, Clock, Pound } from "lucide-react";
+import { Check, Shield, Clock, PoundSterling } from "lucide-react";
 
 const Features = () => {
   const features = [
     {
-      icon: <Pound className="w-10 h-10 text-secondary" />,
+      icon: <PoundSterling className="w-10 h-10 text-secondary" />,
       title: "£7,500 Government Grant",
       description: "Access the Boiler Upgrade Scheme (BUS) funding for your heat pump installation",
     },
