@@ -1,58 +1,38 @@
-import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import BlogPostEditor from "@/components/BlogPostEditor";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = React.useState(false);
 
-  React.useEffect(() => {
-    checkAdminStatus();
-  }, []);
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/');
+        return;
+      }
 
-  const checkAdminStatus = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate('/');
-      return;
-    }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .single();
+      if (profile?.role !== 'admin') {
+        navigate('/');
+      }
+    };
 
-    if (profile?.role !== 'admin') {
-      navigate('/');
-      return;
-    }
-
-    setIsAdmin(true);
-  };
-
-  if (!isAdmin) return null;
+    checkAdmin();
+  }, [navigate]);
 
   return (
-    <div className="container mx-auto px-4 py-24">
-      <h1 className="text-4xl font-bold mb-8">Admin Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Blog Posts</CardTitle>
-            <CardDescription>Manage your blog content</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <button
-              onClick={() => navigate('/admin/blog')}
-              className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
-            >
-              Manage Posts
-            </button>
-          </CardContent>
-        </Card>
-        {/* Add more admin cards here as needed */}
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+      <div className="bg-white rounded-lg shadow-sm">
+        <BlogPostEditor />
       </div>
     </div>
   );
