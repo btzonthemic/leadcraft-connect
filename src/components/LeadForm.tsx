@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 const LeadForm = () => {
@@ -13,11 +14,12 @@ const LeadForm = () => {
     propertyType: "",
     heatingSystem: "",
     service: "",
+    userType: "",
+    serviceDetails: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real implementation, this would send data to your backend
     console.log("Form submitted:", formData);
     toast.success("Thank you! We'll be in touch shortly.");
     setFormData({
@@ -28,6 +30,8 @@ const LeadForm = () => {
       propertyType: "",
       heatingSystem: "",
       service: "",
+      userType: "",
+      serviceDetails: "",
     });
   };
 
@@ -81,6 +85,21 @@ const LeadForm = () => {
                 </SelectContent>
               </Select>
               <Select
+                value={formData.userType}
+                onValueChange={(value) => setFormData({ ...formData, userType: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="I am a..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="homeowner">Homeowner</SelectItem>
+                  <SelectItem value="tenant">Tenant</SelectItem>
+                  <SelectItem value="landlord">Landlord</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Select
                 value={formData.heatingSystem}
                 onValueChange={(value) => setFormData({ ...formData, heatingSystem: value })}
               >
@@ -94,21 +113,29 @@ const LeadForm = () => {
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
+              <Select
+                value={formData.service}
+                onValueChange={(value) => setFormData({ ...formData, service: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Service Needed" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="heat-pump">Heat Pump Installation</SelectItem>
+                  <SelectItem value="plumbing">Plumbing Services</SelectItem>
+                  <SelectItem value="electrical">Electrical Services</SelectItem>
+                  <SelectItem value="heating">General Heating Services</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <Select
-              value={formData.service}
-              onValueChange={(value) => setFormData({ ...formData, service: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Service Needed" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="heat-pump">Heat Pump Installation</SelectItem>
-                <SelectItem value="plumbing">Plumbing Services</SelectItem>
-                <SelectItem value="electrical">Electrical Services</SelectItem>
-                <SelectItem value="heating">General Heating Services</SelectItem>
-              </SelectContent>
-            </Select>
+            {formData.service && (
+              <Textarea
+                placeholder="Please provide more details about the service you need..."
+                value={formData.serviceDetails}
+                onChange={(e) => setFormData({ ...formData, serviceDetails: e.target.value })}
+                className="min-h-[100px]"
+              />
+            )}
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90" size="lg">
               Check Eligibility Now
             </Button>
