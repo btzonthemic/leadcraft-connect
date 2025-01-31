@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogIn, LogOut, LayoutDashboard } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { NavbarAdminMenu } from "./NavbarAdminMenu";
@@ -87,13 +87,6 @@ export const NavbarAuth = () => {
 
   return (
     <div className="ml-auto flex items-center gap-4">
-      {user && isAdmin && (
-        <Link to="/admin/dashboard">
-          <Button variant="ghost" size="icon" className="w-9 h-9">
-            <LayoutDashboard className="h-5 w-5" />
-          </Button>
-        </Link>
-      )}
       {!user ? (
         <Button
           variant="ghost"
