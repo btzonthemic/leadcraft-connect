@@ -4,6 +4,11 @@ import App from './App.tsx';
 import './index.css';
 import Index from './pages/Index.tsx';
 import Auth from './pages/Auth.tsx';
+import About from './pages/About.tsx';
+import Contact from './pages/Contact.tsx';
+import Grants from './pages/Grants.tsx';
+import FAQs from './pages/FAQs.tsx';
+import Blog from './pages/Blog.tsx';
 import HeatPumpInstallation from './pages/HeatPumpInstallation.tsx';
 import PlumbingServices from './pages/PlumbingServices.tsx';
 import ElectricalServices from './pages/ElectricalServices.tsx';
@@ -23,6 +28,26 @@ const router = createBrowserRouter([
       {
         path: "auth",
         element: <Auth />,
+      },
+      {
+        path: "about",
+        element: <About />,
+      },
+      {
+        path: "contact",
+        element: <Contact />,
+      },
+      {
+        path: "grants",
+        element: <Grants />,
+      },
+      {
+        path: "faqs",
+        element: <FAQs />,
+      },
+      {
+        path: "blog",
+        element: <Blog />,
       },
       {
         path: "heat-pump-installation",
