@@ -59,6 +59,7 @@ export function Navbar({ className }: { className?: string }) {
           description: "Could not verify admin status",
           variant: "destructive",
         });
+        setIsAdmin(false);
         return;
       }
 
