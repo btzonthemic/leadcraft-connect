@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
+  NavigationMenu,
+  NavigationMenuList,
   NavigationMenuItem,
   NavigationMenuTrigger,
   NavigationMenuContent,
@@ -68,33 +70,37 @@ export const NavbarAdminMenu = ({ user, onLogout }) => {
   if (!isAdmin) return null;
 
   return (
-    <NavigationMenuItem>
-      <NavigationMenuTrigger>
-        <UserCog className="w-4 h-4 mr-2" />
-        Admin
-      </NavigationMenuTrigger>
-      <NavigationMenuContent>
-        <ul className="grid w-[200px] gap-3 p-4">
-          <ListItem to="/admin/dashboard" title="Dashboard">
-            <LayoutDashboard className="w-4 h-4 mr-2" />
-            Admin Dashboard
-          </ListItem>
-          <ListItem to="/admin/blog" title="Manage Blog">
-            <FileEdit className="w-4 h-4 mr-2" />
-            Blog Management
-          </ListItem>
-          <li>
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={onLogout}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </li>
-        </ul>
-      </NavigationMenuContent>
-    </NavigationMenuItem>
+    <NavigationMenu>
+      <NavigationMenuList>
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>
+            <UserCog className="w-4 h-4 mr-2" />
+            Admin
+          </NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <ul className="grid w-[200px] gap-3 p-4">
+              <ListItem to="/admin/dashboard" title="Dashboard">
+                <LayoutDashboard className="w-4 h-4 mr-2" />
+                Admin Dashboard
+              </ListItem>
+              <ListItem to="/admin/blog" title="Manage Blog">
+                <FileEdit className="w-4 h-4 mr-2" />
+                Blog Management
+              </ListItem>
+              <li>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={onLogout}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </li>
+            </ul>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
   );
 };
