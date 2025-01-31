@@ -45,36 +45,18 @@ export const NavbarAuth = () => {
     }
   };
 
-  const handleLogin = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/admin/dashboard`
-        }
-      });
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to initiate login",
-        variant: "destructive",
-      });
-    }
+  const handleLogin = () => {
+    navigate('/auth');
   };
 
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
       navigate('/');
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
     } catch (error) {
       console.error('Logout error:', error);
       toast({
