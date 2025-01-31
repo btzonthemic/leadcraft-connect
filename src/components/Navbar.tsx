@@ -62,7 +62,7 @@ export function Navbar({ className }: { className?: string }) {
         return;
       }
 
-      // If no profile exists, default to non-admin
+      // If no profile exists or role is not admin, default to non-admin
       setIsAdmin(profile?.role === 'admin');
     } catch (error) {
       console.error('Error checking admin status:', error);
