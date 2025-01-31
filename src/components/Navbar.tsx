@@ -20,7 +20,8 @@ import {
   Settings,
   LayoutDashboard,
   FileEdit,
-  LogOut
+  LogOut,
+  UserCog
 } from "lucide-react";
 
 export function Navbar({ className }: { className?: string }) {
@@ -197,7 +198,7 @@ export function Navbar({ className }: { className?: string }) {
             {user && isAdmin && (
               <NavigationMenuItem>
                 <NavigationMenuTrigger>
-                  <Settings className="w-4 h-4 mr-2" />
+                  <UserCog className="w-4 h-4 mr-2" />
                   Admin
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -236,16 +237,6 @@ export function Navbar({ className }: { className?: string }) {
             >
               <LogIn className="w-4 h-4" />
               <span>Login</span>
-            </Button>
-          )}
-          {user && !isAdmin && (
-            <Button
-              variant="ghost"
-              className="flex items-center gap-2"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
             </Button>
           )}
         </div>
