@@ -9,6 +9,7 @@ import PlumbingServices from './pages/PlumbingServices.tsx';
 import ElectricalServices from './pages/ElectricalServices.tsx';
 import HeatingServices from './pages/HeatingServices.tsx';
 import Dashboard from './pages/admin/Dashboard.tsx';
+import BlogManagement from './pages/admin/BlogManagement.tsx';
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
       {
         path: "admin/dashboard",
         element: <Dashboard />,
+      },
+      {
+        path: "admin/blog",
+        element: <BlogManagement />,
       },
     ],
   },
