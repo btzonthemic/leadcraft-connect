@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,18 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const role = await checkUserRole(session.user.id);
+        handleRedirect(role);
+      }
+    };
+    checkSession();
+  }, []);
 
   const checkUserRole = async (userId: string) => {
     try {
@@ -30,8 +42,7 @@ const Auth = () => {
     }
   };
 
-  const handleRedirect = async (userId: string) => {
-    const role = await checkUserRole(userId);
+  const handleRedirect = (role: string) => {
     if (role === 'admin') {
       navigate("/admin/dashboard");
     } else {
@@ -52,7 +63,8 @@ const Auth = () => {
       if (error) throw error;
 
       if (user) {
-        await handleRedirect(user.id);
+        const role = await checkUserRole(user.id);
+        handleRedirect(role);
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
@@ -78,7 +90,7 @@ const Auth = () => {
         email,
         password,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: `${window.location.origin}/admin/dashboard`,
         },
       });
 
