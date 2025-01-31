@@ -1,7 +1,8 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { GoogleGenerativeAI } from "npm:@google/generative-ai";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,8 +16,8 @@ serve(async (req) => {
   }
 
   try {
-    if (!openAIApiKey) {
-      throw new Error('OPENAI_API_KEY is not set');
+    if (!geminiApiKey) {
+      throw new Error('GEMINI_API_KEY is not set');
     }
 
     const { type, topic, tone = 'professional' } = await req.json();
@@ -37,37 +38,25 @@ serve(async (req) => {
         throw new Error('Invalid content type requested');
     }
 
-    console.log('Sending request to OpenAI with prompt:', prompt);
+    console.log('Sending request to Gemini with prompt:', prompt);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are an expert HVAC content writer specializing in heat pump installations and energy efficiency. Your content is accurate, engaging, and optimized for both homeowners and professionals.'
-          },
-          { role: 'user', content: prompt }
-        ],
-      }),
-    });
+    const genAI = new GoogleGenerativeAI(geminiApiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const data = await response.json();
-    console.log('OpenAI response:', data);
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    console.log('Gemini response:', text);
     
-    if (!data.choices?.[0]?.message?.content) {
-      console.error('No content in OpenAI response:', data);
+    if (!text) {
+      console.error('No content in Gemini response');
       throw new Error('No content generated');
     }
 
     return new Response(
       JSON.stringify({ 
-        content: data.choices[0].message.content,
+        content: text,
         type 
       }),
       { 
