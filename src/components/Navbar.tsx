@@ -1,10 +1,17 @@
-import React, { useState } from "react";
-import { HoveredLink, Menu, MenuItem } from "@/components/ui/navbar-menu";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 import { 
   Wrench, 
   Info, 
@@ -17,13 +24,11 @@ import {
 } from "lucide-react";
 
 export function Navbar({ className }: { className?: string }) {
-  const [active, setActive] = useState<string | null>(null);
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  React.useEffect(() => {
-    // Check current auth status
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -31,7 +36,6 @@ export function Navbar({ className }: { className?: string }) {
       }
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -63,7 +67,6 @@ export function Navbar({ className }: { className?: string }) {
         return;
       }
 
-      // If no profile exists or role is not admin, default to non-admin
       setIsAdmin(profile?.role === 'admin');
     } catch (error) {
       console.error('Error checking admin status:', error);
@@ -76,7 +79,7 @@ export function Navbar({ className }: { className?: string }) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: `${window.location.origin}/admin/dashboard`
         }
       });
 
@@ -112,88 +115,168 @@ export function Navbar({ className }: { className?: string }) {
   };
 
   return (
-    <div className={cn("fixed top-4 inset-x-0 max-w-2xl mx-auto z-50", className)}>
-      <Menu setActive={setActive} className="backdrop-blur-sm bg-white/75 dark:bg-black/75 border border-black/10">
-        <MenuItem setActive={setActive} active={active} item="Services">
-          <div className="flex items-center gap-2">
-            <Wrench className="w-4 h-4" />
-            <span>Services</span>
-          </div>
-          <div className="flex flex-col space-y-4 text-sm">
-            <HoveredLink to="/heat-pump-installation">Heat Pump Installation</HoveredLink>
-            <HoveredLink to="/plumbing-services">Plumbing Services</HoveredLink>
-            <HoveredLink to="/electrical-services">Electrical Services</HoveredLink>
-            <HoveredLink to="/heating-services">Heating Services</HoveredLink>
-          </div>
-        </MenuItem>
-        <MenuItem setActive={setActive} active={active} item="About">
-          <div className="flex items-center gap-2">
-            <Info className="w-4 h-4" />
-            <span>About</span>
-          </div>
-          <div className="flex flex-col space-y-4 text-sm">
-            <HoveredLink to="/about">About Us</HoveredLink>
-            <HoveredLink to="/contact">Contact</HoveredLink>
-          </div>
-        </MenuItem>
-        <MenuItem setActive={setActive} active={active} item="Resources">
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4" />
-            <span>Resources</span>
-          </div>
-          <div className="flex flex-col space-y-4 text-sm">
-            <HoveredLink to="/grants">Available Grants</HoveredLink>
-            <HoveredLink to="/faqs">FAQs</HoveredLink>
-            <HoveredLink to="/blog">Blog</HoveredLink>
-          </div>
-        </MenuItem>
-        {user && isAdmin ? (
-          <MenuItem setActive={setActive} active={active} item="Admin">
-            <div className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              <span>Admin</span>
-            </div>
-            <div className="flex flex-col space-y-4 text-sm">
-              <div className="flex items-center gap-2">
-                <LayoutDashboard className="w-4 h-4" />
-                <HoveredLink to="/admin/dashboard">Dashboard</HoveredLink>
-              </div>
-              <div className="flex items-center gap-2">
-                <FileEdit className="w-4 h-4" />
-                <HoveredLink to="/admin/blog">Manage Blog</HoveredLink>
-              </div>
-              <Button 
-                variant="ghost" 
-                className="text-left hover:bg-transparent hover:text-primary flex items-center gap-2"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
-              </Button>
-            </div>
-          </MenuItem>
-        ) : (
-          user ? (
-            <Button 
-              variant="ghost" 
-              className="ml-4 flex items-center gap-2"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
-            </Button>
-          ) : (
-            <Button 
-              variant="ghost" 
-              className="ml-4 flex items-center gap-2"
+    <div className={cn("fixed top-0 w-full z-50 bg-background/80 backdrop-blur-sm border-b", className)}>
+      <div className="container flex h-16 items-center">
+        <Link to="/" className="mr-8 flex items-center space-x-2">
+          <span className="font-bold">Your Logo</span>
+        </Link>
+        <NavigationMenu>
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>
+                <Wrench className="w-4 h-4 mr-2" />
+                Services
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-3 p-4">
+                  <li className="row-span-3">
+                    <NavigationMenuLink asChild>
+                      <Link
+                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                        to="/heat-pump-installation"
+                      >
+                        <div className="mb-2 mt-4 text-lg font-medium">
+                          Heat Pump Installation
+                        </div>
+                        <p className="text-sm leading-tight text-muted-foreground">
+                          Professional heat pump installation services
+                        </p>
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                  <ListItem to="/plumbing-services" title="Plumbing Services">
+                    Expert plumbing solutions for your home
+                  </ListItem>
+                  <ListItem to="/electrical-services" title="Electrical Services">
+                    Complete electrical installation and maintenance
+                  </ListItem>
+                  <ListItem to="/heating-services" title="Heating Services">
+                    Comprehensive heating system solutions
+                  </ListItem>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>
+                <Info className="w-4 h-4 mr-2" />
+                About
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[200px] gap-3 p-4">
+                  <ListItem to="/about" title="About Us">
+                    Learn more about our company
+                  </ListItem>
+                  <ListItem to="/contact" title="Contact">
+                    Get in touch with us
+                  </ListItem>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>
+                <BookOpen className="w-4 h-4 mr-2" />
+                Resources
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[200px] gap-3 p-4">
+                  <ListItem to="/grants" title="Available Grants">
+                    Find available funding options
+                  </ListItem>
+                  <ListItem to="/faqs" title="FAQs">
+                    Common questions answered
+                  </ListItem>
+                  <ListItem to="/blog" title="Blog">
+                    Latest news and updates
+                  </ListItem>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
+            {user && isAdmin && (
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Admin
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[200px] gap-3 p-4">
+                    <ListItem to="/admin/dashboard" title="Dashboard">
+                      <LayoutDashboard className="w-4 h-4 mr-2" />
+                      Admin Dashboard
+                    </ListItem>
+                    <ListItem to="/admin/blog" title="Manage Blog">
+                      <FileEdit className="w-4 h-4 mr-2" />
+                      Blog Management
+                    </ListItem>
+                    <li>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logout
+                      </Button>
+                    </li>
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+            )}
+          </NavigationMenuList>
+        </NavigationMenu>
+
+        <div className="ml-auto">
+          {!user && (
+            <Button
+              variant="ghost"
+              className="flex items-center gap-2"
               onClick={handleLogin}
             >
               <LogIn className="w-4 h-4" />
               <span>Login</span>
             </Button>
-          )
-        )}
-      </Menu>
+          )}
+          {user && !isAdmin && (
+            <Button
+              variant="ghost"
+              className="flex items-center gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
+
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a"> & { to: string; title: string }
+>(({ className, title, children, to, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <Link
+          ref={ref as any}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          to={to}
+          {...props}
+        >
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </Link>
+      </NavigationMenuLink>
+    </li>
+  );
+});
+ListItem.displayName = "ListItem";
