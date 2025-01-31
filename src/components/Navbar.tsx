@@ -68,6 +68,21 @@ export function Navbar({ className }: { className?: string }) {
         return;
       }
 
+      // If no profile exists, create one with default role 'user'
+      if (!profile) {
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert([{ id: userId, role: 'user' }]);
+
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+          setIsAdmin(false);
+          return;
+        }
+        setIsAdmin(false);
+        return;
+      }
+
       setIsAdmin(profile?.role === 'admin');
     } catch (error) {
       console.error('Error checking admin status:', error);
@@ -114,6 +129,8 @@ export function Navbar({ className }: { className?: string }) {
       });
     }
   };
+
+  // ... keep existing code (JSX for navigation menu items)
 
   return (
     <div className={cn("fixed top-0 w-full z-50 bg-background/80 backdrop-blur-sm border-b", className)}>
