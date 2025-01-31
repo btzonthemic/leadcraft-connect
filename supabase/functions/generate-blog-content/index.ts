@@ -15,7 +15,12 @@ serve(async (req) => {
   }
 
   try {
+    if (!openAIApiKey) {
+      throw new Error('OPENAI_API_KEY is not set');
+    }
+
     const { type, topic, tone = 'professional' } = await req.json();
+    console.log('Generating content for:', { type, topic, tone });
     
     let prompt = '';
     switch (type) {
@@ -31,6 +36,8 @@ serve(async (req) => {
       default:
         throw new Error('Invalid content type requested');
     }
+
+    console.log('Sending request to OpenAI with prompt:', prompt);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -51,9 +58,10 @@ serve(async (req) => {
     });
 
     const data = await response.json();
-    console.log('AI Response:', data);
+    console.log('OpenAI response:', data);
     
     if (!data.choices?.[0]?.message?.content) {
+      console.error('No content in OpenAI response:', data);
       throw new Error('No content generated');
     }
 
