@@ -14,23 +14,50 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const checkUserRole = async (userId: string) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return profile?.role || 'user';
+    } catch (error) {
+      console.error('Error checking user role:', error);
+      return 'user';
+    }
+  };
+
+  const handleRedirect = async (userId: string) => {
+    const role = await checkUserRole(userId);
+    if (role === 'admin') {
+      navigate("/admin/dashboard");
+    } else {
+      navigate("/");
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: { user }, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
-      navigate("/");
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-      });
+      if (user) {
+        await handleRedirect(user.id);
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
+        });
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -77,7 +104,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: `${window.location.origin}/admin/dashboard`
         }
       });
 
