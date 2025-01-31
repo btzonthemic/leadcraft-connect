@@ -4,6 +4,16 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { 
+  Wrench, 
+  Info, 
+  BookOpen, 
+  LogIn,
+  Settings,
+  LayoutDashboard,
+  FileEdit,
+  LogOut
+} from "lucide-react";
 
 export function Navbar({ className }: { className?: string }) {
   const [active, setActive] = useState<string | null>(null);
@@ -41,6 +51,10 @@ export function Navbar({ className }: { className?: string }) {
     <div className={cn("fixed top-4 inset-x-0 max-w-2xl mx-auto z-50", className)}>
       <Menu setActive={setActive} className="backdrop-blur-sm bg-white/75 dark:bg-black/75 border border-black/10">
         <MenuItem setActive={setActive} active={active} item="Services">
+          <div className="flex items-center gap-2">
+            <Wrench className="w-4 h-4" />
+            <span>Services</span>
+          </div>
           <div className="flex flex-col space-y-4 text-sm">
             <HoveredLink to="/heat-pump-installation">Heat Pump Installation</HoveredLink>
             <HoveredLink to="/plumbing-services">Plumbing Services</HoveredLink>
@@ -49,12 +63,20 @@ export function Navbar({ className }: { className?: string }) {
           </div>
         </MenuItem>
         <MenuItem setActive={setActive} active={active} item="About">
+          <div className="flex items-center gap-2">
+            <Info className="w-4 h-4" />
+            <span>About</span>
+          </div>
           <div className="flex flex-col space-y-4 text-sm">
             <HoveredLink to="/about">About Us</HoveredLink>
             <HoveredLink to="/contact">Contact</HoveredLink>
           </div>
         </MenuItem>
         <MenuItem setActive={setActive} active={active} item="Resources">
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-4 h-4" />
+            <span>Resources</span>
+          </div>
           <div className="flex flex-col space-y-4 text-sm">
             <HoveredLink to="/grants">Available Grants</HoveredLink>
             <HoveredLink to="/faqs">FAQs</HoveredLink>
@@ -64,15 +86,26 @@ export function Navbar({ className }: { className?: string }) {
         {user ? (
           <>
             <MenuItem setActive={setActive} active={active} item="Admin">
+              <div className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                <span>Admin</span>
+              </div>
               <div className="flex flex-col space-y-4 text-sm">
-                <HoveredLink to="/admin/dashboard">Dashboard</HoveredLink>
-                <HoveredLink to="/admin/blog">Manage Blog</HoveredLink>
+                <div className="flex items-center gap-2">
+                  <LayoutDashboard className="w-4 h-4" />
+                  <HoveredLink to="/admin/dashboard">Dashboard</HoveredLink>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FileEdit className="w-4 h-4" />
+                  <HoveredLink to="/admin/blog">Manage Blog</HoveredLink>
+                </div>
                 <Button 
                   variant="ghost" 
-                  className="text-left hover:bg-transparent hover:text-primary"
+                  className="text-left hover:bg-transparent hover:text-primary flex items-center gap-2"
                   onClick={handleLogout}
                 >
-                  Logout
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
                 </Button>
               </div>
             </MenuItem>
@@ -80,10 +113,11 @@ export function Navbar({ className }: { className?: string }) {
         ) : (
           <Button 
             variant="ghost" 
-            className="ml-4"
+            className="ml-4 flex items-center gap-2"
             onClick={handleLogin}
           >
-            Login
+            <LogIn className="w-4 h-4" />
+            <span>Login</span>
           </Button>
         )}
       </Menu>
