@@ -1,38 +1,16 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import BlogPostEditor from "@/components/BlogPostEditor";
+import { AdminLayout } from "@/components/layouts/AdminLayout";
 
 const BlogManagement = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkAdmin = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/');
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.role !== 'admin') {
-        navigate('/');
-      }
-    };
-
-    checkAdmin();
-  }, [navigate]);
-
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8">Blog Management</h1>
-      <BlogPostEditor />
-    </div>
+    <AdminLayout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Blog Management</h1>
+        </div>
+        <BlogPostEditor />
+      </div>
+    </AdminLayout>
   );
 };
 
