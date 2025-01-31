@@ -106,14 +106,6 @@ export const NavbarAuth = () => {
       ) : (
         <>
           {isAdmin && <NavbarAdminMenu user={user} onLogout={handleLogout} />}
-          <Button
-            variant="ghost"
-            className="flex items-center gap-2"
-            onClick={handleLogout}
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Logout</span>
-          </Button>
         </>
       )}
     </div>
