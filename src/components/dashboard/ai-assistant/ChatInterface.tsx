@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { Send } from "lucide-react";
+import { Send, Loader } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Message {
   role: "user" | "assistant";
@@ -15,12 +16,14 @@ export function ChatInterface() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
 
+    setError(null);
     try {
       setIsLoading(true);
       const userMessage: Message = { role: "user", content: message };
@@ -62,6 +65,7 @@ export function ChatInterface() {
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error: any) {
       console.error("Chat error:", error);
+      setError(error.message || "Failed to send message");
       toast({
         title: "Error",
         description: error.message || "Failed to send message",
@@ -74,6 +78,11 @@ export function ChatInterface() {
 
   return (
     <div className="flex flex-col h-[600px]">
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       <ScrollArea className="flex-1 p-4 border rounded-lg mb-4">
         {messages.map((msg, index) => (
           <div
@@ -100,7 +109,11 @@ export function ChatInterface() {
           className="flex-1"
         />
         <Button type="submit" disabled={isLoading}>
-          <Send className="h-4 w-4" />
+          {isLoading ? (
+            <Loader className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
         </Button>
       </form>
     </div>
