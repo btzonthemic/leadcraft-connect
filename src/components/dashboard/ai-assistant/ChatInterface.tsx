@@ -6,9 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Send } from "lucide-react";
 
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export function ChatInterface() {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -18,8 +23,9 @@ export function ChatInterface() {
 
     try {
       setIsLoading(true);
-      const userMessage = { role: "user", content: message };
+      const userMessage: Message = { role: "user", content: message };
       setMessages((prev) => [...prev, userMessage]);
+      setMessage("");
 
       // Log the interaction
       const { error: logError } = await supabase
@@ -33,15 +39,32 @@ export function ChatInterface() {
 
       if (logError) throw logError;
 
-      // Call AI endpoint (to be implemented)
-      const aiResponse = { role: "assistant", content: "This is a placeholder AI response." };
-      setMessages((prev) => [...prev, aiResponse]);
-      setMessage("");
-    } catch (error) {
+      // Call AI endpoint
+      const { data, error } = await supabase.functions.invoke("chat-with-ai", {
+        body: { message, conversation: messages },
+      });
+
+      if (error) throw error;
+
+      const aiMessage: Message = {
+        role: "assistant",
+        content: data.response,
+      };
+
+      // Log AI response
+      await supabase.from("ai_interactions").insert([
+        {
+          interaction_type: "ai_response",
+          content: data.response,
+        },
+      ]);
+
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error: any) {
       console.error("Chat error:", error);
       toast({
         title: "Error",
-        description: "Failed to send message",
+        description: error.message || "Failed to send message",
         variant: "destructive",
       });
     } finally {
@@ -56,10 +79,15 @@ export function ChatInterface() {
           <div
             key={index}
             className={`mb-4 p-3 rounded-lg ${
-              msg.role === "user" ? "bg-primary/10 ml-auto" : "bg-muted"
-            } max-w-[80%]`}
+              msg.role === "user" 
+                ? "bg-primary/10 ml-auto max-w-[80%]" 
+                : "bg-muted max-w-[80%]"
+            }`}
           >
-            {msg.content}
+            <div className="text-xs text-muted-foreground mb-1">
+              {msg.role === "user" ? "You" : "AI Assistant"}
+            </div>
+            <div className="whitespace-pre-wrap">{msg.content}</div>
           </div>
         ))}
       </ScrollArea>
@@ -69,6 +97,7 @@ export function ChatInterface() {
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type your message..."
           disabled={isLoading}
+          className="flex-1"
         />
         <Button type="submit" disabled={isLoading}>
           <Send className="h-4 w-4" />
