@@ -74,11 +74,11 @@ export function CodeManagement() {
   const getSeverityIcon = (severity: CodeAnalysis["severity"]) => {
     switch (severity) {
       case "error":
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
+        return <AlertOctagon className="h-5 w-5 text-red-500" />;
       case "warning":
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+        return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
       case "info":
-        return <Check className="h-5 w-5 text-blue-500" />;
+        return <Info className="h-5 w-5 text-blue-500" />;
       default:
         return null;
     }
