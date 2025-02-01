@@ -8,13 +8,14 @@ import {
   FileCode,
   GitBranch,
   RefreshCw,
-  Check,
+  Wrench,
   AlertTriangle,
   AlertOctagon,
   Info,
   Shield,
   Package,
   Users,
+  Rocket,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
@@ -27,9 +28,18 @@ interface CodeAnalysis {
   line?: number;
 }
 
+interface OptimizationResult {
+  type: string;
+  description: string;
+  status: "pending" | "in-progress" | "completed";
+  progress: number;
+}
+
 export function CodeManagement() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isOptimizing, setIsOptimizing] = useState(false);
   const [codeAnalysis, setCodeAnalysis] = useState<CodeAnalysis[]>([]);
+  const [optimizations, setOptimizations] = useState<OptimizationResult[]>([]);
   const { toast } = useToast();
 
   const analyzeCode = async () => {
@@ -55,6 +65,61 @@ export function CodeManagement() {
       });
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const optimizeCode = async () => {
+    setIsOptimizing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('optimize-code', {
+        body: { action: 'optimize' }
+      });
+
+      if (error) throw error;
+
+      setOptimizations(data.optimizations || []);
+      toast({
+        title: "Code Optimization Started",
+        description: "Optimization tasks are now running",
+      });
+    } catch (error: any) {
+      console.error("Code optimization error:", error);
+      toast({
+        title: "Optimization Failed",
+        description: error.message || "Failed to start optimization",
+        variant: "destructive",
+      });
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
+
+  const fixIssue = async (analysis: CodeAnalysis) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('fix-code-issue', {
+        body: { 
+          type: analysis.type,
+          file: analysis.file,
+          line: analysis.line
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Issue Fixed",
+        description: `Successfully fixed ${analysis.type} issue`,
+      });
+
+      // Refresh analysis
+      analyzeCode();
+    } catch (error: any) {
+      console.error("Fix issue error:", error);
+      toast({
+        title: "Fix Failed",
+        description: error.message || "Failed to fix the issue",
+        variant: "destructive",
+      });
     }
   };
 
@@ -88,18 +153,33 @@ export function CodeManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Code Management</h2>
-        <Button
-          onClick={analyzeCode}
-          disabled={isAnalyzing}
-          className="flex items-center gap-2"
-        >
-          {isAnalyzing ? (
-            <RefreshCw className="h-4 w-4 animate-spin" />
-          ) : (
-            <Code className="h-4 w-4" />
-          )}
-          {isAnalyzing ? "Analyzing..." : "Analyze Code"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={analyzeCode}
+            disabled={isAnalyzing}
+            className="flex items-center gap-2"
+          >
+            {isAnalyzing ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Code className="h-4 w-4" />
+            )}
+            {isAnalyzing ? "Analyzing..." : "Analyze Code"}
+          </Button>
+          <Button
+            onClick={optimizeCode}
+            disabled={isOptimizing}
+            variant="secondary"
+            className="flex items-center gap-2"
+          >
+            {isOptimizing ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Rocket className="h-4 w-4" />
+            )}
+            {isOptimizing ? "Optimizing..." : "Optimize Code"}
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="analysis" className="w-full">
@@ -109,7 +189,7 @@ export function CodeManagement() {
             Analysis
           </TabsTrigger>
           <TabsTrigger value="optimization" className="flex items-center gap-2">
-            <GitBranch className="h-4 w-4" />
+            <Rocket className="h-4 w-4" />
             Optimization
           </TabsTrigger>
         </TabsList>
@@ -122,9 +202,19 @@ export function CodeManagement() {
                   <div className="flex items-start gap-3">
                     {getSeverityIcon(analysis.severity)}
                     <div className="flex-1">
-                      <p className={`font-medium ${getSeverityColor(analysis.severity)}`}>
-                        {analysis.type}
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className={`font-medium ${getSeverityColor(analysis.severity)}`}>
+                          {analysis.type}
+                        </p>
+                        <Button
+                          size="sm"
+                          onClick={() => fixIssue(analysis)}
+                          className="flex items-center gap-2"
+                        >
+                          <Wrench className="h-4 w-4" />
+                          Fix It
+                        </Button>
+                      </div>
                       <p className="text-sm text-muted-foreground mt-1">
                         {analysis.message}
                       </p>
@@ -151,11 +241,34 @@ export function CodeManagement() {
         </TabsContent>
 
         <TabsContent value="optimization" className="mt-4">
-          <Card className="p-6">
-            <p className="text-center text-muted-foreground">
-              Code optimization features coming soon
-            </p>
-          </Card>
+          <div className="grid gap-4">
+            {optimizations.length > 0 ? (
+              optimizations.map((optimization, index) => (
+                <Card key={index} className="p-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">{optimization.type}</h3>
+                      <span className="text-sm text-muted-foreground capitalize">
+                        {optimization.status}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {optimization.description}
+                    </p>
+                    <Progress value={optimization.progress} className="h-2" />
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <Card className="p-6 text-center text-muted-foreground">
+                {isOptimizing ? (
+                  "Running code optimizations..."
+                ) : (
+                  "Click 'Optimize Code' to start code optimization"
+                )}
+              </Card>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

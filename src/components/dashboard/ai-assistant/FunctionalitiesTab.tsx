@@ -1,4 +1,6 @@
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Grid, 
   Settings, 
@@ -18,7 +20,10 @@ import {
   TrendingUp,
   BarChart,
   Zap,
-  Target
+  Target,
+  Plus,
+  Rocket,
+  Wrench
 } from "lucide-react";
 
 interface Functionality {
@@ -30,6 +35,7 @@ interface Functionality {
 }
 
 export function FunctionalitiesTab() {
+  const { toast } = useToast();
   const functionalities: Functionality[] = [
     // Core System Features
     {
@@ -164,6 +170,81 @@ export function FunctionalitiesTab() {
     }
   ];
 
+  const handleAction = async (functionality: Functionality, action: "create" | "enhance" | "fix") => {
+    try {
+      const { data, error } = await supabase.functions.invoke('handle-functionality', {
+        body: { 
+          functionality: functionality.title,
+          action
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Action Started",
+        description: `${action} operation started for ${functionality.title}`,
+      });
+    } catch (error: any) {
+      console.error(`${action} error:`, error);
+      toast({
+        title: "Action Failed",
+        description: error.message || `Failed to ${action} functionality`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getActionButtons = (functionality: Functionality) => {
+    const buttons = [];
+    
+    if (functionality.status === "coming-soon") {
+      buttons.push(
+        <Button
+          key="create"
+          size="sm"
+          onClick={() => handleAction(functionality, "create")}
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Create
+        </Button>
+      );
+    }
+    
+    if (functionality.status === "in-development" || functionality.status === "active") {
+      buttons.push(
+        <Button
+          key="enhance"
+          size="sm"
+          variant="secondary"
+          onClick={() => handleAction(functionality, "enhance")}
+          className="flex items-center gap-2"
+        >
+          <Rocket className="h-4 w-4" />
+          Enhance
+        </Button>
+      );
+    }
+    
+    if (functionality.status === "active") {
+      buttons.push(
+        <Button
+          key="fix"
+          size="sm"
+          variant="outline"
+          onClick={() => handleAction(functionality, "fix")}
+          className="flex items-center gap-2"
+        >
+          <Wrench className="h-4 w-4" />
+          Fix Bugs
+        </Button>
+      );
+    }
+    
+    return buttons;
+  };
+
   const getStatusColor = (status: Functionality["status"]) => {
     switch (status) {
       case "active":
@@ -205,6 +286,9 @@ export function FunctionalitiesTab() {
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground">{func.description}</p>
+                  <div className="flex gap-2 mt-auto">
+                    {getActionButtons(func)}
+                  </div>
                 </Card>
               ))}
             </div>
