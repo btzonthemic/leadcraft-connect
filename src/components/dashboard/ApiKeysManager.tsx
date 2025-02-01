@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import ApiKeysStatus from "./ApiKeysStatus";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export const ApiKeysManager = () => {
   const [apiKeys, setApiKeys] = useState({
@@ -10,9 +10,16 @@ export const ApiKeysManager = () => {
     openai: false,
     huggingface: false,
   });
+  const { toast } = useToast();
 
   const checkApiKeys = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("No active session");
+      }
+
       const { data, error } = await supabase.functions.invoke("check-api-keys", {
         body: {},
       });
@@ -29,11 +36,11 @@ export const ApiKeysManager = () => {
           huggingface: !!data.HUGGINGFACE_API_KEY,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error checking API keys:", error);
       toast({
         title: "Error",
-        description: "Failed to check API keys status",
+        description: error.message || "Failed to check API keys status",
         variant: "destructive",
       });
     }
@@ -43,5 +50,5 @@ export const ApiKeysManager = () => {
     checkApiKeys();
   }, []);
 
-  return <ApiKeysStatus apiKeys={apiKeys} />;
+  return <ApiKeysStatus apiKeys={apiKeys} onRefresh={checkApiKeys} />;
 };

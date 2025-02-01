@@ -1,17 +1,25 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Bot } from "lucide-react";
+import { Bot, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 export const AIMetrics = () => {
   const [aiMetrics, setAiMetrics] = useState({
     totalInteractions: 0,
     lastInteraction: null as string | null,
   });
+  const { toast } = useToast();
 
   const fetchAIMetrics = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("No active session");
+      }
+
       const { count: totalCount, error: countError } = await supabase
         .from('ai_interactions')
         .select('*', { count: 'exact', head: true });
@@ -30,11 +38,11 @@ export const AIMetrics = () => {
         totalInteractions: totalCount || 0,
         lastInteraction: latestData?.[0]?.created_at || null,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching AI metrics:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch AI interaction metrics",
+        description: error.message || "Failed to fetch AI interaction metrics",
         variant: "destructive",
       });
     }
@@ -46,9 +54,19 @@ export const AIMetrics = () => {
 
   return (
     <Card className="p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Bot className="h-6 w-6" />
-        <h2 className="text-xl font-semibold">AI Assistant Status</h2>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Bot className="h-6 w-6" />
+          <h2 className="text-xl font-semibold">AI Assistant Status</h2>
+        </div>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={fetchAIMetrics}
+          className="h-8 w-8"
+        >
+          <RefreshCw className="h-4 w-4" />
+        </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="p-4 bg-primary/10 rounded-lg">

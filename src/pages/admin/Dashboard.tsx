@@ -1,17 +1,30 @@
+import { useEffect } from "react";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { AIMetrics } from "@/components/dashboard/AIMetrics";
 import { ApiKeysManager } from "@/components/dashboard/ApiKeysManager";
 import BlogPostSection from "@/components/dashboard/BlogPostSection";
-import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        toast({
+          title: "Authentication Error",
+          description: "Please try logging in again",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
+
       if (!session) {
         navigate('/auth');
         return;
@@ -29,7 +42,7 @@ const Dashboard = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, toast]);
 
   return (
     <AdminLayout>
