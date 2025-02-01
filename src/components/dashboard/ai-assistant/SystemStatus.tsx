@@ -2,7 +2,8 @@ import { Card } from "@/components/ui/card";
 import { CheckCircle, XCircle, Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { DatabaseManager } from "./database/DatabaseManager";
 
 interface SystemState {
   name: string;
@@ -104,8 +105,9 @@ export function SystemStatus() {
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <h2 className="text-2xl font-bold">System Status</h2>
+      
       <div className="grid gap-4">
         {systems.map((system) => (
           <Card key={system.name} className="p-4">
@@ -121,6 +123,10 @@ export function SystemStatus() {
             </div>
           </Card>
         ))}
+      </div>
+
+      <div className="mt-8">
+        <DatabaseManager />
       </div>
     </div>
   );
