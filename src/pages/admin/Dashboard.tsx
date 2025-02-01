@@ -6,8 +6,10 @@ import { Bot } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [apiKeys, setApiKeys] = useState({
     deepseek: false,
     gemini: false,
@@ -21,22 +23,47 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    checkApiKeys();
-    fetchAIMetrics();
-  }, []);
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+      checkApiKeys();
+      fetchAIMetrics();
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/auth');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   const checkApiKeys = async () => {
     try {
-      const {
-        data: { DEEPSEEK_API_KEY, GEMINI_API_KEY, OPENAI_API_KEY, HUGGINGFACE_API_KEY },
-      } = await supabase.functions.invoke("check-api-keys");
-
-      setApiKeys({
-        deepseek: !!DEEPSEEK_API_KEY,
-        gemini: !!GEMINI_API_KEY,
-        openai: !!OPENAI_API_KEY,
-        huggingface: !!HUGGINGFACE_API_KEY,
+      const { data, error } = await supabase.functions.invoke("check-api-keys", {
+        body: {},
       });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        setApiKeys({
+          deepseek: !!data.DEEPSEEK_API_KEY,
+          gemini: !!data.GEMINI_API_KEY,
+          openai: !!data.OPENAI_API_KEY,
+          huggingface: !!data.HUGGINGFACE_API_KEY,
+        });
+      }
     } catch (error) {
       console.error("Error checking API keys:", error);
       toast({
