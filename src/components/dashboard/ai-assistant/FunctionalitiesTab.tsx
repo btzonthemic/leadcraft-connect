@@ -10,7 +10,15 @@ import {
   Users,
   Megaphone,
   Brain,
-  Code
+  Code,
+  GitBranch,
+  Bug,
+  Search,
+  Mail,
+  TrendingUp,
+  BarChart,
+  Zap,
+  Target
 } from "lucide-react";
 
 interface Functionality {
@@ -45,6 +53,27 @@ export function FunctionalitiesTab() {
       status: "active",
       category: "core"
     },
+    {
+      title: "Code Management",
+      description: "Automated code optimization and deployment",
+      icon: <Code className="h-6 w-6" />,
+      status: "in-development",
+      category: "core"
+    },
+    {
+      title: "CI/CD Integration",
+      description: "GitHub integration for automated deployments",
+      icon: <GitBranch className="h-6 w-6" />,
+      status: "coming-soon",
+      category: "core"
+    },
+    {
+      title: "Bug Detection",
+      description: "Automated error detection and resolution",
+      icon: <Bug className="h-6 w-6" />,
+      status: "in-development",
+      category: "core"
+    },
     // Lead & Contractor Management
     {
       title: "Lead Distribution",
@@ -60,11 +89,46 @@ export function FunctionalitiesTab() {
       status: "coming-soon",
       category: "management"
     },
+    {
+      title: "Contractor Engagement",
+      description: "Analyze and optimize contractor activity and engagement",
+      icon: <Target className="h-6 w-6" />,
+      status: "in-development",
+      category: "management"
+    },
+    {
+      title: "Dynamic Pricing",
+      description: "AI-driven pricing optimization for leads",
+      icon: <TrendingUp className="h-6 w-6" />,
+      status: "coming-soon",
+      category: "management"
+    },
     // Marketing & SEO
     {
       title: "Content Generation",
       description: "AI-powered SEO content and marketing material creation",
       icon: <Megaphone className="h-6 w-6" />,
+      status: "in-development",
+      category: "marketing"
+    },
+    {
+      title: "SEO Optimization",
+      description: "Automated keyword research and content optimization",
+      icon: <Search className="h-6 w-6" />,
+      status: "coming-soon",
+      category: "marketing"
+    },
+    {
+      title: "Email Automation",
+      description: "Automated email campaigns and notifications",
+      icon: <Mail className="h-6 w-6" />,
+      status: "coming-soon",
+      category: "marketing"
+    },
+    {
+      title: "Performance Analytics",
+      description: "Marketing campaign performance tracking and optimization",
+      icon: <BarChart className="h-6 w-6" />,
       status: "in-development",
       category: "marketing"
     },
@@ -76,21 +140,28 @@ export function FunctionalitiesTab() {
       status: "in-development",
       category: "chatbot"
     },
+    {
+      title: "Smart Responses",
+      description: "Natural Language Understanding for complex queries",
+      icon: <Brain className="h-6 w-6" />,
+      status: "coming-soon",
+      category: "chatbot"
+    },
     // Business Growth
     {
       title: "Growth Analytics",
       description: "AI-driven business insights and growth recommendations",
-      icon: <Brain className="h-6 w-6" />,
+      icon: <TrendingUp className="h-6 w-6" />,
       status: "coming-soon",
       category: "growth"
     },
     {
-      title: "Code Management",
-      description: "Automated code optimization and deployment",
-      icon: <Code className="h-6 w-6" />,
+      title: "Performance Optimization",
+      description: "System-wide performance monitoring and optimization",
+      icon: <Zap className="h-6 w-6" />,
       status: "in-development",
-      category: "core"
-    },
+      category: "growth"
+    }
   ];
 
   const getStatusColor = (status: Functionality["status"]) => {
