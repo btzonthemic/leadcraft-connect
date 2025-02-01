@@ -9,9 +9,15 @@ import {
   GitBranch,
   RefreshCw,
   Check,
-  AlertCircle,
+  AlertTriangle,
+  AlertOctagon,
+  Info,
+  Shield,
+  Package,
+  Users,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Progress } from "@/components/ui/progress";
 
 interface CodeAnalysis {
   type: string;
