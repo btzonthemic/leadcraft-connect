@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Brain, Settings, MessageSquare, Grid } from "lucide-react";
+import { Brain, Settings, MessageSquare, Grid, Code } from "lucide-react";
 import { ChatInterface } from "./ai-assistant/ChatInterface";
 import { SystemStatus } from "./ai-assistant/SystemStatus";
 import { SettingsPanel } from "./ai-assistant/SettingsPanel";
 import { FunctionalitiesTab } from "./ai-assistant/FunctionalitiesTab";
+import { CodeManagement } from "./ai-assistant/code/CodeManagement";
 
 export function AIAssistantDashboard() {
   return (
@@ -17,6 +18,10 @@ export function AIAssistantDashboard() {
         <TabsTrigger value="system" className="flex items-center gap-2">
           <Brain className="h-4 w-4" />
           System Management
+        </TabsTrigger>
+        <TabsTrigger value="code" className="flex items-center gap-2">
+          <Code className="h-4 w-4" />
+          Code Management
         </TabsTrigger>
         <TabsTrigger value="functionalities" className="flex items-center gap-2">
           <Grid className="h-4 w-4" />
@@ -37,6 +42,12 @@ export function AIAssistantDashboard() {
       <TabsContent value="system" className="mt-4">
         <Card className="p-6">
           <SystemStatus />
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="code" className="mt-4">
+        <Card className="p-6">
+          <CodeManagement />
         </Card>
       </TabsContent>
 
