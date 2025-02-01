@@ -17,7 +17,7 @@ const Dashboard = () => {
 
   const [aiMetrics, setAiMetrics] = useState({
     totalInteractions: 0,
-    lastInteraction: null,
+    lastInteraction: null as string | null,
   });
 
   useEffect(() => {
@@ -49,20 +49,33 @@ const Dashboard = () => {
 
   const fetchAIMetrics = async () => {
     try {
-      const { data, error } = await supabase
+      // Get total count
+      const { count: totalCount, error: countError } = await supabase
+        .from('ai_interactions')
+        .select('*', { count: 'exact', head: true });
+
+      if (countError) throw countError;
+
+      // Get latest interaction
+      const { data: latestData, error: latestError } = await supabase
         .from('ai_interactions')
         .select('created_at')
         .order('created_at', { ascending: false })
         .limit(1);
 
-      if (error) throw error;
+      if (latestError) throw latestError;
 
       setAiMetrics({
-        totalInteractions: data?.length || 0,
-        lastInteraction: data?.[0]?.created_at || null,
+        totalInteractions: totalCount || 0,
+        lastInteraction: latestData?.[0]?.created_at || null,
       });
     } catch (error) {
       console.error("Error fetching AI metrics:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch AI interaction metrics",
+        variant: "destructive",
+      });
     }
   };
 
