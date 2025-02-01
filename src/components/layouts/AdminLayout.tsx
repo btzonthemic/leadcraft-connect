@@ -17,6 +17,7 @@ import {
   Settings,
   Users,
   LogOut,
+  Bot,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -67,6 +68,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   <a href="/admin/dashboard" className="flex items-center gap-2">
                     <LayoutDashboard className="h-4 w-4" />
                     <span>Dashboard</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a href="/admin/ai-assistant" className="flex items-center gap-2">
+                    <Bot className="h-4 w-4" />
+                    <span>AI Assistant</span>
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
