@@ -23,25 +23,22 @@ export function DatabaseManager() {
 
   const fetchTableInfo = async () => {
     try {
-      const { data: tablesData, error } = await supabase
-        .from('ai_interactions')
-        .select('count(*)')
-        .single();
+      // Fetch counts for each table
+      const [aiInteractionsCount, profilesCount] = await Promise.all([
+        supabase.from('ai_interactions').select('*', { count: 'exact', head: true }),
+        supabase.from('profiles').select('*', { count: 'exact', head: true })
+      ]);
 
-      if (error) throw error;
-
-      // For demo purposes, we're showing some sample table data
-      // In a real implementation, we would fetch this from Supabase
       setTables([
         {
           name: 'ai_interactions',
-          rowCount: tablesData?.count || 0,
+          rowCount: aiInteractionsCount.count || 0,
           lastAnalyzed: new Date().toISOString(),
           status: 'healthy'
         },
         {
           name: 'profiles',
-          rowCount: 0,
+          rowCount: profilesCount.count || 0,
           lastAnalyzed: new Date().toISOString(),
           status: 'healthy'
         }

@@ -17,6 +17,7 @@ export function SystemStatus() {
     { name: "AI Integration", status: false, loading: true },
     { name: "Security Protocols", status: false, loading: true },
   ]);
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkSystems = async () => {
@@ -102,7 +103,7 @@ export function SystemStatus() {
     };
 
     checkSystems();
-  }, []);
+  }, [toast]);
 
   return (
     <div className="space-y-6">
