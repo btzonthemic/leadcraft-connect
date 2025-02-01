@@ -1,60 +1,47 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
-
-interface ChatMessage {
-  role: string;
-  content: string;
-}
+import { useToast } from "@/components/ui/use-toast";
+import { Send } from "lucide-react";
 
 export function ChatInterface() {
-  const [userInput, setUserInput] = useState("");
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [conversation, setConversation] = useState<ChatMessage[]>([]);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userInput.trim()) return;
+    if (!message.trim()) return;
 
     try {
       setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("No active session");
+      const userMessage = { role: "user", content: message };
+      setMessages((prev) => [...prev, userMessage]);
 
-      const newMessage = { role: "user", content: userInput };
-      setConversation(prev => [...prev, newMessage]);
+      // Log the interaction
+      const { error: logError } = await supabase
+        .from("ai_interactions")
+        .insert([
+          {
+            interaction_type: "user_message",
+            content: message,
+          },
+        ]);
 
-      await supabase.from('ai_interactions').insert({
-        interaction_type: 'chat',
-        content: userInput,
-        user_id: session.user.id
-      });
+      if (logError) throw logError;
 
-      const { data, error } = await supabase.functions.invoke("ai-assistant", {
-        body: { message: userInput, conversation: conversation }
-      });
-
-      if (error) throw error;
-
-      const assistantMessage = { role: "assistant", content: data.response };
-      setConversation(prev => [...prev, assistantMessage]);
-
-      await supabase.from('ai_interactions').insert({
-        interaction_type: 'assistant_response',
-        content: data.response,
-        user_id: session.user.id
-      });
-
-      setUserInput("");
-    } catch (error: any) {
-      console.error("Error:", error);
+      // Call AI endpoint (to be implemented)
+      const aiResponse = { role: "assistant", content: "This is a placeholder AI response." };
+      setMessages((prev) => [...prev, aiResponse]);
+      setMessage("");
+    } catch (error) {
+      console.error("Chat error:", error);
       toast({
         title: "Error",
-        description: "Failed to get AI response. Please try again.",
+        description: "Failed to send message",
         variant: "destructive",
       });
     } finally {
@@ -63,39 +50,28 @@ export function ChatInterface() {
   };
 
   return (
-    <div className="space-y-4">
-      <ScrollArea className="h-[400px] pr-4">
-        {conversation.map((message, index) => (
+    <div className="flex flex-col h-[600px]">
+      <ScrollArea className="flex-1 p-4 border rounded-lg mb-4">
+        {messages.map((msg, index) => (
           <div
             key={index}
-            className={`mb-4 p-4 rounded-lg ${
-              message.role === "assistant"
-                ? "bg-primary/10 ml-4"
-                : "bg-muted mr-4"
-            }`}
+            className={`mb-4 p-3 rounded-lg ${
+              msg.role === "user" ? "bg-primary/10 ml-auto" : "bg-muted"
+            } max-w-[80%]`}
           >
-            <div className="flex items-center gap-2 mb-2">
-              {message.role === "assistant" ? (
-                <Bot className="h-4 w-4" />
-              ) : (
-                <div className="h-4 w-4 rounded-full bg-primary" />
-              )}
-              <span className="capitalize">{message.role}</span>
-            </div>
-            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+            {msg.content}
           </div>
         ))}
       </ScrollArea>
-
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <Textarea
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          placeholder="Ask me anything about the system..."
-          className="flex-1"
+        <Input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Type your message..."
+          disabled={isLoading}
         />
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Thinking..." : "Send"}
+          <Send className="h-4 w-4" />
         </Button>
       </form>
     </div>
