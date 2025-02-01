@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Database, Table, ArrowUpDown, AlertTriangle, CheckCircle, RefreshCw } from "lucide-react";
+import { Database, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Progress } from "@/components/ui/progress";
+import { TableCard } from "./TableCard";
 
 interface TableInfo {
   name: string;
@@ -58,30 +57,17 @@ export function DatabaseManager() {
   useEffect(() => {
     fetchTableInfo();
 
-    // Subscribe to real-time updates
     const channel = supabase
       .channel('schema-db-changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'ai_interactions'
-        },
-        () => {
-          fetchTableInfo();
-        }
+        { event: '*', schema: 'public', table: 'ai_interactions' },
+        () => fetchTableInfo()
       )
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles'
-        },
-        () => {
-          fetchTableInfo();
-        }
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => fetchTableInfo()
       )
       .subscribe();
 
@@ -89,17 +75,6 @@ export function DatabaseManager() {
       supabase.removeChannel(channel);
     };
   }, []);
-
-  const getStatusIcon = (status: TableInfo['status']) => {
-    switch (status) {
-      case 'healthy':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
-      case 'error':
-        return <AlertTriangle className="h-5 w-5 text-red-500" />;
-    }
-  };
 
   return (
     <div className="space-y-4">
@@ -122,36 +97,7 @@ export function DatabaseManager() {
 
       <div className="grid gap-4">
         {tables.map((table) => (
-          <Card key={table.name} className="p-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Table className="h-4 w-4" />
-                    <h3 className="font-medium">{table.name}</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {table.rowCount.toLocaleString()} rows
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(table.status)}
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Health</span>
-                  <span>{table.health}%</span>
-                </div>
-                <Progress value={table.health} className="h-2" />
-              </div>
-
-              <p className="text-xs text-muted-foreground">
-                Last analyzed: {new Date(table.lastAnalyzed).toLocaleString()}
-              </p>
-            </div>
-          </Card>
+          <TableCard key={table.name} table={table} />
         ))}
       </div>
     </div>
