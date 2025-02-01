@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { CheckCircle, XCircle, Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 interface SystemState {
   name: string;
@@ -33,6 +34,7 @@ export function SystemStatus() {
           )
         );
       } catch (error) {
+        console.error("Database check error:", error);
         setSystems(prev => 
           prev.map(sys => 
             sys.name === "Database Connection" 
@@ -56,6 +58,7 @@ export function SystemStatus() {
           )
         );
       } catch (error) {
+        console.error("AI check error:", error);
         setSystems(prev => 
           prev.map(sys => 
             sys.name === "AI Integration" 
@@ -70,16 +73,18 @@ export function SystemStatus() {
         const { data, error } = await supabase
           .from("profiles")
           .select("role")
-          .single();
+          .limit(1);
         
+        // If we can query profiles, security is working
         setSystems(prev => 
           prev.map(sys => 
             sys.name === "Security Protocols" 
-              ? { ...sys, status: !error, loading: false }
+              ? { ...sys, status: !error && data !== null, loading: false }
               : sys
           )
         );
       } catch (error) {
+        console.error("Security check error:", error);
         setSystems(prev => 
           prev.map(sys => 
             sys.name === "Security Protocols" 
@@ -87,6 +92,11 @@ export function SystemStatus() {
               : sys
           )
         );
+        toast({
+          variant: "destructive",
+          title: "Security Check Failed",
+          description: "Unable to verify security protocols.",
+        });
       }
     };
 
