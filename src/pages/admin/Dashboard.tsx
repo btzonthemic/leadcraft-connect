@@ -1,26 +1,13 @@
 import { AdminLayout } from "@/components/layouts/AdminLayout";
-import ApiKeysStatus from "@/components/dashboard/ApiKeysStatus";
+import { AIMetrics } from "@/components/dashboard/AIMetrics";
+import { ApiKeysManager } from "@/components/dashboard/ApiKeysManager";
 import BlogPostSection from "@/components/dashboard/BlogPostSection";
-import { Card } from "@/components/ui/card";
-import { Bot } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [apiKeys, setApiKeys] = useState({
-    deepseek: false,
-    gemini: false,
-    openai: false,
-    huggingface: false,
-  });
-
-  const [aiMetrics, setAiMetrics] = useState({
-    totalInteractions: 0,
-    lastInteraction: null as string | null,
-  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -29,8 +16,6 @@ const Dashboard = () => {
         navigate('/auth');
         return;
       }
-      checkApiKeys();
-      fetchAIMetrics();
     };
 
     checkAuth();
@@ -46,66 +31,6 @@ const Dashboard = () => {
     };
   }, [navigate]);
 
-  const checkApiKeys = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke("check-api-keys", {
-        body: {},
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data) {
-        setApiKeys({
-          deepseek: !!data.DEEPSEEK_API_KEY,
-          gemini: !!data.GEMINI_API_KEY,
-          openai: !!data.OPENAI_API_KEY,
-          huggingface: !!data.HUGGINGFACE_API_KEY,
-        });
-      }
-    } catch (error) {
-      console.error("Error checking API keys:", error);
-      toast({
-        title: "Error",
-        description: "Failed to check API keys status",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const fetchAIMetrics = async () => {
-    try {
-      // Get total count
-      const { count: totalCount, error: countError } = await supabase
-        .from('ai_interactions')
-        .select('*', { count: 'exact', head: true });
-
-      if (countError) throw countError;
-
-      // Get latest interaction
-      const { data: latestData, error: latestError } = await supabase
-        .from('ai_interactions')
-        .select('created_at')
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      if (latestError) throw latestError;
-
-      setAiMetrics({
-        totalInteractions: totalCount || 0,
-        lastInteraction: latestData?.[0]?.created_at || null,
-      });
-    } catch (error) {
-      console.error("Error fetching AI metrics:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch AI interaction metrics",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -113,27 +38,8 @@ const Dashboard = () => {
           <h1 className="text-3xl font-bold">Dashboard</h1>
         </div>
         <div className="grid gap-6">
-          <Card className="p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Bot className="h-6 w-6" />
-              <h2 className="text-xl font-semibold">AI Assistant Status</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-primary/10 rounded-lg">
-                <p className="text-sm text-muted-foreground">Total Interactions</p>
-                <p className="text-2xl font-bold">{aiMetrics.totalInteractions}</p>
-              </div>
-              <div className="p-4 bg-primary/10 rounded-lg">
-                <p className="text-sm text-muted-foreground">Last Interaction</p>
-                <p className="text-2xl font-bold">
-                  {aiMetrics.lastInteraction 
-                    ? new Date(aiMetrics.lastInteraction).toLocaleDateString()
-                    : 'Never'}
-                </p>
-              </div>
-            </div>
-          </Card>
-          <ApiKeysStatus apiKeys={apiKeys} />
+          <AIMetrics />
+          <ApiKeysManager />
           <BlogPostSection />
         </div>
       </div>
